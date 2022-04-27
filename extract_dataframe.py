@@ -2,7 +2,6 @@ import json
 import pandas as pd
 from textblob import TextBlob
 
-import re
 
 
 def read_json(json_file: str)->list:
@@ -51,7 +50,10 @@ class TweetDfExtractor:
             else:
                 text.append(tweet['text'])
         return text 
-        
+    def find_clean_text(self) -> list:
+        clean_text = [re.sub("[^a-zA-Z0-9#@\s’,_]", "", text) for text in self.find_full_text()]
+        clean_text = [re.sub("\s+", " ", text) for text in clean_text]
+        return clean_text   
     
     def find_sentiments(self, text)->list:
         polarity = [TextBlob(x).polarity for x in text]
@@ -127,15 +129,15 @@ class TweetDfExtractor:
     def get_tweet_df(self, save=False)->pd.DataFrame:
         """required column to be generated you should be creative and add more features"""
         
-        columns = ['created_at', 'source', 'original_text','polarity','subjectivity', 'lang', 'favorite_count', 'retweet_count', 
+        columns = ['created_at', 'source', 'original_text','clean_text','polarity','subjectivity', 'lang', 'favorite_count', 'retweet_count', 
 
         'original_author',  'followers_count','friends_count','possibly_sensitive', 'hashtags', 'user_mentions', 'place']
 
         created_at = self.find_created_time()
         source = self.find_source()
         text = self.find_full_text()
-        polarity, subjectivity = self.find_sentiments(text)
-        polarity, subjectivity = self.find_sentiments(text)
+        clean_text = self.find_clean_text()
+        polarity, subjectivity= self.find_sentiments(text)
         lang = self.find_lang()
         fav_count = self.find_favourite_count()
         retweet_count = self.find_retweet_count()
@@ -147,7 +149,7 @@ class TweetDfExtractor:
         mentions = self.find_mentions()
         location = self.find_location()
 
-        data = zip(created_at, source, text,polarity, subjectivity, lang, fav_count, retweet_count,
+        data = zip(created_at, source, text,polarity,clean_text, subjectivity, lang, fav_count, retweet_count,
             screen_name, follower_count, friends_count, sensitivity, hashtags, mentions, location)
         df = pd.DataFrame(data=data, columns=columns)
 
