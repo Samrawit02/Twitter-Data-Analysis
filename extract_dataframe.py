@@ -1,6 +1,7 @@
 import json
 import pandas as pd
 from textblob import TextBlob
+import re
 
 
 
@@ -169,6 +170,7 @@ if __name__ == "__main__":
 
     tweet = TweetDfExtractor(tweet_list)
     tweet_df = tweet.get_tweet_df() 
+    print(tweet_df)
 
     # use all defined functions to generate a dataframe with the specified columns above
 
